@@ -9,7 +9,7 @@ def main():
     app = QApplication([])
     window = MainWindow()
     window.show()
-    window.setWindowTitle("Чернякова Валерия, Ярусова Татьяна КГ Лаб. 1")
+    window.setWindowTitle("Чернякова Валерия, Ярусова Татьяна КГ Лаб. 1-2")
     sys.exit(app.exec_())
 
 

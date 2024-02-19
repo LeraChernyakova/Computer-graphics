@@ -16,8 +16,8 @@ class GLScene(QGLWidget):
         self.dfactor = GL_ONE
         self.x = 0
         self.y = 0
-        self.width = 800
-        self.height = 600
+        self.width = 600
+        self.height = 800
 
     def initializeGL(self):
         glClearColor(0.0, 0.0, 0.0, 1.0)
@@ -25,6 +25,9 @@ class GLScene(QGLWidget):
         glLineWidth(3.0)
 
     def resizeGL(self, width, height):
+        self.frameWidth = width
+        self.frameHeight = height
+
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
@@ -34,10 +37,11 @@ class GLScene(QGLWidget):
         else:
             glOrtho(-1.0 * aspect_ratio, 1.0 * aspect_ratio, -1.0, 1.0, -1.0, 1.0)
         glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
 
     def paintGL(self):
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glLoadIdentity()
 
         colors = [
             (0.0, 1.0, 1.0), (1.0, 0.0, 1.0), (0.0, 0.5, 0.0),
@@ -47,14 +51,16 @@ class GLScene(QGLWidget):
         ]
 
         num_points = 12
-        radius = 0.5
+        radius = 0.7
 
         glEnable(GL_ALPHA_TEST)
         glEnable(GL_BLEND)
         glEnable(GL_SCISSOR_TEST)
         glAlphaFunc(self.alpha, self.alpha_value)
         glBlendFunc(self.sfactor, self.dfactor)
-        glScissor(self.x, self.height - self.y - self.height, self.width, self.height)
+        glScissor(self.x, self.y, self.width, self.height)
+
+
         glBegin(self.primitiveMode)
         for point in range(num_points):
             glColor4f(colors[point % len(colors)][0], colors[point % len(colors)][1], colors[point % len(colors)][2],
@@ -64,4 +70,8 @@ class GLScene(QGLWidget):
             y = radius * math.sin(angle)
             glVertex2f(x, y)
         glEnd()
+
+        glDisable(GL_SCISSOR_TEST)
+        glDisable(GL_ALPHA_TEST)
+        glDisable(GL_BLEND)
 

@@ -140,7 +140,6 @@ class MainWindow(QMainWindow):
         elif text in self.dfactor:
             self.gl_widget.dfactor = self.all_QComboBox['dfactor'][text]
         self.gl_widget.update()
-        self.gl_widget.paintGL()
 
     def create_slider(self, min_value, max_value, start_value, slider_name, layout):
         slider = QSlider(Qt.Horizontal)
@@ -163,6 +162,7 @@ class MainWindow(QMainWindow):
     def on_slider_value_changed(self, value):
         sender = self.sender()
         slider_name = sender.objectName()
+
         if slider_name == 'x':
             self.slider_labels['x'].setText(f"Выбранное значение: {value}")
             self.gl_widget.x = value
@@ -179,7 +179,6 @@ class MainWindow(QMainWindow):
             self.slider_labels['a'].setText(f"Выбранное значение: {value / 100}")
             self.gl_widget.alpha_value = value / 100
         self.gl_widget.update()
-        self.gl_widget.paintGL()
 
 
     def create_text(self, text, layout):
