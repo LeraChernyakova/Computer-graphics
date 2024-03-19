@@ -1,19 +1,22 @@
 import numpy as np
 from OpenGL.GL import *
-from PyQt5.QtOpenGL import QGLWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QOpenGLWidget
+from CountNURBS import buildNurbs
 
-from drawing import buildNurbs
 
-
-class GLScene(QGLWidget):
+class GLScene(QOpenGLWidget):
     def __init__(self, parent=None):
         super(GLScene, self).__init__(parent)
+        self.frameHeight = None
+        self.frameWidth = None
         self.x = 0
         self.y = 0
         self.width = 600
         self.height = 800
+        self.selected_point = None
 
-    # Опорные точки
+        # Контрольные точки
         self.P = [
             np.array([-0.9, -0.9]),
             np.array([-0.700, -0.3]),
@@ -22,70 +25,86 @@ class GLScene(QGLWidget):
             np.array([0.9, 0.9])
         ]
 
-        # Задаём узловой вектор
-        self.T = np.arange(len(self.P) + 4)
+        # Узловой вектор
+        self.T = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-        self.W = [1, 10, 100, 1000, 1]
+        # Веса контрольных точек
+        self.W = [1, 10, 100, 46, 1]
 
-        self.F, N = buildNurbs(self.T, self.P, self.W)
+        # Базисные функции
+        self.f, N = buildNurbs(self.T, self.P, self.W)
 
     def initializeGL(self):
-        glClearColor(255.0, 255.0, 255.0, 1.0)
-        glPointSize(10.0)
-        glLineWidth(5.0)
-
-
-        # glPointSize(5.0)
-        # glLineWidth(3.0)
+        glClearColor(1.0, 1.0, 1.0, 0.0)
+        glPointSize(7.0)
+        glLineWidth(1.5)
 
     def resizeGL(self, width, height):
+        self.frameWidth = width
+        self.frameHeight = height
 
         glViewport(0, 0, width, height)
-        # self.viewPortResized.emit(width, height)
-
-        # glMatrixMode(GL_PROJECTION)
-        # glLoadIdentity()
-        # aspect_ratio = width / height
-        # if width <= height:
-        #     glOrtho(-1.0, 1.0, -1.0 / aspect_ratio, 1.0 / aspect_ratio, -1.0, 1.0)
-        # else:
-        #     glOrtho(-1.0 * aspect_ratio, 1.0 * aspect_ratio, -1.0, 1.0, -1.0, 1.0)
-        # glMatrixMode(GL_MODELVIEW)
-        # glLoadIdentity()
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        aspect_ratio = width / height
+        if width <= height:
+            glOrtho(-1.0, 1.0, -1.0 / aspect_ratio, 1.0 / aspect_ratio, -1.0, 1.0)
+        else:
+            glOrtho(-1.0 * aspect_ratio, 1.0 * aspect_ratio, -1.0, 1.0, -1.0, 1.0)
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
 
     def paintGL(self):
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+        # Построение контрольных точек
         glBegin(GL_POINTS)
-        glColor3dv((1, 0, 0))
-        for p in self.P:
-            glVertex2dv(p)
+        for i, point in enumerate(self.P):
+            if i == self.selected_point:
+                glColor3dv((0, 1, 0))
+            else:
+                glColor3dv((1, 0, 0))
+            glVertex2dv(point)
         glEnd()
 
+        # Построение основных линий через контрольные точки
         glBegin(GL_LINE_STRIP)
-        glColor3dv((0, 1, 0))
-        for p in self.P:
-            glVertex2dv(p)
+        glColor3dv((0, 0, 1))
+        for points in self.P:
+            glVertex2dv(points)
         glEnd()
 
+        # Построение NURBS-слпайна
         glBegin(GL_LINE_STRIP)
         glColor3dv((0, 0, 0))
-        X = np.linspace(1, 7, 1000)
-        Points = [self.F(x) for x in X]
-        for p in Points:
+        x = np.linspace(1, 8, 1000)
+        points_ = [self.F(x_) for x_ in x]
+        for p in points_:
             glVertex2dv(p)
         glEnd()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            x = (event.x() / self.width) * 2 - 1
+            y = ((self.height - event.y()) / self.height) * 2 - 1
+            min_distance = float('inf')
+            self.selected_point = None
+            for i, point in enumerate(self.P):
+                distance = np.linalg.norm(point - np.array([x, y]))
+                if distance < min_distance:
+                    min_distance = distance
+                    self.selected_point = i
+            self.update()
 
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.LeftButton and self.selected_point is not None:
+            pos = event.pos()
+            x_point = pos.x() / self.width * 2 - 1
+            y_point = 1 - pos.y() / self.height * 2
+            self.P[self.selected_point] = np.array([x_point, y_point])
+            self.update()
 
-
-
-
-
-
-
-
-
-
-
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.selected_point = None
+            self.update()
