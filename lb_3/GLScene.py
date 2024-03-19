@@ -1,5 +1,9 @@
+import numpy as np
 from OpenGL.GL import *
 from PyQt5.QtOpenGL import QGLWidget
+
+from drawing import buildNurbs
+
 
 class GLScene(QGLWidget):
     def __init__(self, parent=None):
@@ -9,11 +13,27 @@ class GLScene(QGLWidget):
         self.width = 600
         self.height = 800
 
-        self.function = None
+    # Опорные точки
+        self.P = [
+            np.array([-0.9, -0.9]),
+            np.array([-0.700, -0.3]),
+            np.array([0.5, -0.4]),
+            np.array([-0.200, -0.7]),
+            np.array([0.9, 0.9])
+        ]
+
+        # Задаём узловой вектор
+        self.T = np.arange(len(self.P) + 4)
+
+        self.W = [1, 10, 100, 1000, 1]
+
+        self.F, N = buildNurbs(self.T, self.P, self.W)
 
     def initializeGL(self):
         glClearColor(255.0, 255.0, 255.0, 1.0)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glPointSize(10.0)
+        glLineWidth(5.0)
+
 
         # glPointSize(5.0)
         # glLineWidth(3.0)
@@ -21,7 +41,7 @@ class GLScene(QGLWidget):
     def resizeGL(self, width, height):
 
         glViewport(0, 0, width, height)
-        self.viewPortResized.emit(width, height)
+        # self.viewPortResized.emit(width, height)
 
         # glMatrixMode(GL_PROJECTION)
         # glLoadIdentity()
@@ -34,9 +54,34 @@ class GLScene(QGLWidget):
         # glLoadIdentity()
 
     def paintGL(self):
-        # Вызов рендер-функции
-        if self.function is not None:
-            self.function()
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        glBegin(GL_POINTS)
+        glColor3dv((1, 0, 0))
+        for p in self.P:
+            glVertex2dv(p)
+        glEnd()
+
+        glBegin(GL_LINE_STRIP)
+        glColor3dv((0, 1, 0))
+        for p in self.P:
+            glVertex2dv(p)
+        glEnd()
+
+        glBegin(GL_LINE_STRIP)
+        glColor3dv((0, 0, 0))
+        X = np.linspace(1, 7, 1000)
+        Points = [self.F(x) for x in X]
+        for p in Points:
+            glVertex2dv(p)
+        glEnd()
+
+
+
+
+
+
 
 
 

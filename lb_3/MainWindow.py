@@ -14,21 +14,17 @@ class MainWindow(QMainWindow):
 
         # Инициализация экрана
         self.init_layout()
-        #
-        # Задаём рендер-функцию
-        self.gl_widget.function = self.renderFunction
 
         # Опорные точки
+
         self.P = [
-            np.array([0, 0]),
-            np.array([1, 3]),
-            np.array([2, 1]),
-            np.array([3, 4]),
-            np.array([4, 0])
+            np.array([-0.9, -0.9]),
+            np.array([-0.700, -0.3]),
+            np.array([0, 0.1]),
+            np.array([0.300, -0.4]),
+            np.array([0.400, 0])
         ]
 
-        # Задаём узловой вектор
-        self.T = np.arange(len(self.P) + 4)
 
         # Виджет управления
         self.control = ControlPanel(len(self.P), self)
@@ -36,12 +32,12 @@ class MainWindow(QMainWindow):
         # # Задаём начальные веса
         for i in range(5):
             if i % 2 == 0:
-                self.control.wSliders[i].setValue(60)
+                self.control.wSliders[i].setValue(1)
             else:
-                self.control.wSliders[i].setValue(int(60 / (2 ** (1 / 2))))
+                self.control.wSliders[i].setValue(1)
 
-        self.onWeightsChanged()
-        self.control.weightsChanged.connect(self.onWeightsChanged)
+        # self.onWeightsChanged()
+        # self.control.weightsChanged.connect(self.onWeightsChanged)
 
         sp = QSplitter(self)
         sp.addWidget(self.gl_widget)
@@ -62,32 +58,32 @@ class MainWindow(QMainWindow):
         self.gl_widget = GLScene()
         self.layout.addWidget(self.gl_widget)
 
-    def onWeightsChanged(self):
-        self.W = [s.value() for s in self.control.wSliders]
-        self.rebuildSpline()
+    # def onWeightsChanged(self):
+    #     self.W = [s.value() for s in self.control.wSliders]
+    #     self.rebuildSpline()
 
     # Сборка сплайна
-    def rebuildSpline(self):
-        self.F, N = buildNurbs(self.T, self.P, self.W)
-        X = np.linspace(0, 1, 100)
-        self.Points = [self.F(x) for x in X]
-        self.redraw()
+    # def rebuildSpline(self):
+    #     self.F, N = buildNurbs(self.T, self.P, self.W)
+    #     X = np.linspace(0, 1, 100)
+    #     self.Points = [self.F(x) for x in X]
+    #     self.redraw()
 
-    def renderFunction(self):
-        glPointSize(10)
-        glLineWidth(5)
-        glBegin(GL_LINE_STRIP)
-        glColor3dv((0, 0, 0))
-        for p in self.Points:
-            glVertex2dv(p)
-        glEnd()
-        glBegin(GL_POINTS)
-        glColor3dv((1, 0, 0))
-        for p in self.P:
-            glVertex2dv(p)
-        glEnd()
-
-    # Вызов обновления изображения
-
-    def redraw(self):
-        self.gl_widget.update()
+    # def renderFunction(self):
+        # glPointSize(10)
+        # glLineWidth(5)
+        # glBegin(GL_LINE_STRIP)
+        # glColor3dv((0, 0, 0))
+        # for p in self.Points:
+        #     glVertex2dv(p)
+        # glEnd()
+        # glBegin(GL_POINTS)
+        # glColor3dv((1, 0, 0))
+        # for p in self.P:
+        #     glVertex2dv(p)
+        # glEnd()
+    #
+    # # Вызов обновления изображения
+    #
+    # def redraw(self):
+    #     self.gl_widget.update()
