@@ -1,3 +1,4 @@
+from functools import cache
 from typing import List
 import numpy as np
 
@@ -24,6 +25,7 @@ def buildNurbs(T: List[float], P: List[np.array], W: List[float]):
     def buildNkm(i, j):
         nonlocal N, T
 
+        @cache
         def Nin(t):
             f = (t - T[i]) / (T[i + j] - T[i]) if (T[i + j] - T[i]) != 0 else 0
             g = (T[i + 1 + j] - t) / (T[i + 1 + j] - T[i + 1]) if (T[i + 1 + j] - T[i + 1]) != 0 else 0
@@ -37,8 +39,8 @@ def buildNurbs(T: List[float], P: List[np.array], W: List[float]):
 
     def F(t):
         f = [N[(i, k)](t) * W[i] for i in range(n + 1)]
-        c1 = sum([f[i] * P[i] for i in range(n + 1)])
-        c2 = sum([f[i] for i in range(n + 1)])
-        return c1 / c2 if c2 != 0 else c1
+        b1 = sum([f[i] * P[i] for i in range(n + 1)])
+        b2 = sum([f[i] for i in range(n + 1)])
+        return b1 / b2 if b2 != 0 else b1
 
     return F, N
