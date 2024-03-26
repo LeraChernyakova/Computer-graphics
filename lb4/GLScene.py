@@ -26,7 +26,7 @@ class GLScene(QOpenGLWidget):
 
     def initializeGL(self):
         glClearColor(1.0, 1.0, 1.0, 0.0)
-        gluPerspective(45.0, 1.33, 0.1, 100.0)
+
 
     def resizeGL(self, width, height):
         self.frameWidth = width

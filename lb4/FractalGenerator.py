@@ -4,7 +4,6 @@ from Rectangle import createRectangle
 
 
 def fractalGenerator(gl):
-    print(gl.angle)
     if gl.iterations in gl.steps:
         gl.old_rectangles = gl.steps[gl.iterations]
         gl.new_rectangles = []
@@ -36,7 +35,7 @@ def fractalGenerator(gl):
         gl.new_rectangles.append(createRectangle(
             x - w + 2 * w * 117 / 240,
             y - h + 2 * h * (1 - 120 / 176),
-            angle + 0,
+            angle,
             h * 117 / 176,
             w * 102 / 240
         ))
